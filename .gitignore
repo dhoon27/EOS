@@ -1,0 +1,6 @@
+*.o
+*.dump
+*.axf
+*.bin
+*output/
+archive

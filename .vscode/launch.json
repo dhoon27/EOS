@@ -1,0 +1,22 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "eos",
+            "type": "gdb",
+            "request": "attach",
+            "gdbpath": "/usr/bin/gdb-multiarch",
+            "executable": "/home/dhoon/workspace/eos/eos.axf",
+            "remote": true,
+            "target": "localhost:1234",
+            "cwd": "${workspaceRoot}",
+            "autorun": [
+                "b vector_start"
+            ]
+            // "valuesFormatting": "parseText"
+        }
+    ]
+}
