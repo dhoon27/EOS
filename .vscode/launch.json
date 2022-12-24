@@ -8,15 +8,15 @@
             "name": "eos",
             "type": "gdb",
             "request": "attach",
-            "gdbpath": "/usr/bin/gdb-multiarch",
-            "executable": "/home/dhoon/workspace/eos/eos.axf",
+            "gdbpath": "gdb-multiarch",
+            "executable": "/home/dhoon/workspace/eos/build/eos.axf",
             "remote": true,
-            "target": "localhost:1234",
-            "cwd": "${workspaceRoot}",
+            "target": "tcp::1234,ipv4",
+            "cwd": "/home/dhoon/workspace/eos",
             "autorun": [
-                "b vector_start"
+                // "target remote:1234",
+                // "file /home/dhoon/workspace/eos/build/eos.axf"
             ]
-            // "valuesFormatting": "parseText"
         }
     ]
 }
