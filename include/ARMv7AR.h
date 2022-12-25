@@ -1,3 +1,5 @@
+#ifndef __ARMV7AR__
+#define __ARMV7AR__
 
 /*** CPSR mode[4:0]***/
 #define ARM_MODE_BIT_USR    0x10
@@ -8,3 +10,5 @@
 #define ARM_MODE_BIT_UND    0x1B
 #define ARM_MODE_BIT_SYS    0x1F
 #define ARM_MODE_BIT_MON    0x16 // ?
+
+#endif

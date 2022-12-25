@@ -1,3 +1,6 @@
+#ifndef __MEMMAP__
+#define __MEMMAP__
+
 #define INST_START       (0)
 
 #define USRSYS_STACK_START    (0x00100000)
@@ -31,3 +34,5 @@
 #define ABT_STACK_TOP       (ABT_STACK_START + ABT_STACK_SIZE -4)
 #define UND_STACK_TOP       (UND_STACK_START + UND_STACK_SIZE -4)
 #define TASK_STACK_TOP      (TASK_STACK_START + TASK_STACK_SIZE -4)
+
+#endif

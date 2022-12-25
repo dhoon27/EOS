@@ -1,3 +1,5 @@
+TARGET = rvpb
+
 ## Hardware information
 ARCH = armv7-a
 MCPU = cortex-a8
@@ -10,63 +12,79 @@ AS = $(ARMCOMPILER)as
 LD = $(ARMCOMPILER)ld
 OC = $(ARMCOMPILER)objcopy
 DUMP = $(ARMCOMPILER)objdump
-LK_SCRIPT = eos.ld
+LK_SCRIPT = $(TARGET)_lk.ld
 
-CFLAGS = -march=$(ARCH) -mcpu=$(MCPU) -g -c
-ASFLAGS = -march=$(ARCH) -mcpu=$(MCPU) -g
+CFLAGS = -march=$(ARCH) -mcpu=$(MCPU) -g -c -std=c11
+ASFLAGS = -march=$(ARCH) -mcpu=$(MCPU) -g -std=c11
 
-LDFLAGS = -n -T $(LK_SCRIPT)
+LDFLAGS = -nostartfiles -nostdlib -nodefaultlibs -static -lgcc
+
 OCFLAGS = -O binary
 DUMPFLAGS = -D
 
 ## Directory information
 TOP_DIR = ..
 BUILD_DIR = $(TOP_DIR)/build
+OUTPUT_DIR = $(BUILD_DIR)/output
+
 INC_DIR = $(TOP_DIR)/include
+
 BOOT_DIR = $(TOP_DIR)/boot
-BOOT_OUT_DIR = $(BOOT_DIR)/output
 
-BOOT_INC = -I$(INC_DIR)
+HAL_DIR = $(TOP_DIR)/hal
+HAL_TARGET_DIR = $(TOP_DIR)/hal/$(TARGET)
+
+LIB_DIR = $(TOP_DIR)/lib
+
+VPATH = $(BOOT_DIR) $(HAL_TARGET_DIR) $(LIB_DIR)
+INC_PATH = -I$(INC_DIR) -I$(HAL_DIR) -I$(HAL_TARGET_DIR) -I$(LIB_DIR)
 ## Sources and Objects information
-BOOT_ASRCS = $(wildcard $(BOOT_DIR)/*.S)
-BOOT_AOBJS = $(patsubst $(BOOT_DIR)/%.S, $(BOOT_OUT_DIR)/%.o, $(BOOT_ASRCS))
 
-BOOT_CSRCS = $(wildcard $(BOOT_DIR)/*.c)
-BOOT_COBJS = $(patsubst $(BOOT_DIR)/%.c, $(BOOT_OUT_DIR)/%.o, $(BOOT_CSRCS))
+ASRCS = $(notdir $(wildcard $(BOOT_DIR)/*.S))
+AOBJS = $(patsubst %.S, $(OUTPUT_DIR)/%.os, $(ASRCS))
 
-OBJS = $(BOOT_AOBJS) $(BOOT_COBJS)
+CSRCS = $(notdir $(wildcard $(BOOT_DIR)/*.c))
+CSRCS += $(notdir $(wildcard $(HAL_TARGET_DIR)/*.c))
+CSRCS += $(notdir $(wildcard $(LIB_DIR)/*.c))
+
+COBJS = $(patsubst %.c, $(OUTPUT_DIR)/%.o, $(CSRCS))
+
+OBJS = $(AOBJS) $(COBJS)
+
 
 ## Target output information
-TARGET = eos.axf
-TARGET_BIN = eos.bin
-TARGET_DUMP = eos.dump
-TARGET_MAP = eos.map
+TARGET_AXF = $(TARGET).axf
+TARGET_BIN = $(TARGET).bin
+TARGET_DUMP = $(TARGET).dump
+TARGET_MAP = $(TARGET).map
 
 ## Command
 .PHONY: all clean dump qemu gdb
 
-all: $(TARGET)
+all: $(TARGET_AXF)
 
-$(TARGET): $(OBJS)
-	$(LD) $(LDFLAGS) -Map=$(TARGET_MAP) -o $@ $^
+$(TARGET_AXF): $(OBJS)
+	$(CC) -n -T $(LK_SCRIPT) -Wl,-Map=$(TARGET_MAP) -o $@ $^ $(LDFLAGS)
 	$(OC) $(OCFLAGS) $@ $(TARGET_BIN)
 	$(DUMP) $(DUMPFLAGS) $@ > $(TARGET).dump
 
-$(BOOT_AOBJS): $(BOOT_ASRCS)
-	@echo "**************BOOT_ASM_COMPILE**************"
-	mkdir -p $(BOOT_OUT_DIR)
-	$(CC) $(CFLAGS) $(BOOT_INC) -o $@ $<
+$(OUTPUT_DIR)/%.os: %.S
+	@echo "**************ASM_COMPILE**************"
+	mkdir -p $(OUTPUT_DIR)
+	$(CC) $(CFLAGS) $(INC_PATH) -o $@ $<
 
-$(BOOT_COBJS): $(BOOT_CSRCS)
-	@echo "**************BOOT_C_COMPILE**************"
-	mkdir -p $(BOOT_OUT_DIR)
-	$(CC) $(CFLAGS) $(BOOT_INC) -o $@ $<
+$(OUTPUT_DIR)/%.o: %.c
+	@echo "**************C_COMPILE**************"
+	mkdir -p $(OUTPUT_DIR)
+	$(CC) $(CFLAGS) $(INC_PATH) -o $@ $<
 
 qemu:
-	qemu-system-arm -M $(BOARD) -kernel $(TARGET) -S -nographic -gdb tcp::1234,ipv4
+	qemu-system-arm -M $(BOARD) -kernel $(TARGET_AXF) -nographic
 
 gdb:
-	gdb-multiarch $(TARGET)
+	gdb-multiarch $(TARGET_AXF)
 
 clean:
-	rm -rf $(BOOT_OUT_DIR) $(TARGET_DUMP) $(TARGET) $(TARGET_BIN)
+	rm -rf $(OUTPUT_DIR) $(TARGET).*
+
+## qemu-system-arm -M $(BOARD) -kernel $(TARGET_AXF) -nographic -S -gdb tcp::1234,ipv4
