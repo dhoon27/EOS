@@ -36,8 +36,11 @@ HAL_TARGET_DIR = $(TOP_DIR)/hal/$(TARGET)
 
 LIB_DIR = $(TOP_DIR)/lib
 
-VPATH = $(BOOT_DIR) $(HAL_TARGET_DIR) $(LIB_DIR)
-INC_PATH = -I$(INC_DIR) -I$(HAL_DIR) -I$(HAL_TARGET_DIR) -I$(LIB_DIR)
+KERNEL_DIR = $(TOP_DIR)/kernel
+
+
+VPATH = $(BOOT_DIR) $(HAL_TARGET_DIR) $(LIB_DIR) $(KERNEL_DIR)
+INC_PATH = -I$(INC_DIR) -I$(HAL_DIR) -I$(HAL_TARGET_DIR) -I$(LIB_DIR) -I$(KERNEL_DIR)
 ## Sources and Objects information
 
 ASRCS = $(notdir $(wildcard $(BOOT_DIR)/*.S))
@@ -46,6 +49,8 @@ AOBJS = $(patsubst %.S, $(OUTPUT_DIR)/%.os, $(ASRCS))
 CSRCS = $(notdir $(wildcard $(BOOT_DIR)/*.c))
 CSRCS += $(notdir $(wildcard $(HAL_TARGET_DIR)/*.c))
 CSRCS += $(notdir $(wildcard $(LIB_DIR)/*.c))
+CSRCS += $(notdir $(wildcard $(KERNEL_DIR)/*.c))
+
 
 COBJS = $(patsubst %.c, $(OUTPUT_DIR)/%.o, $(CSRCS))
 
