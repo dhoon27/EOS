@@ -2,6 +2,7 @@
     "files.associations": {
         "haluart.h": "c",
         "uart.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "event.h": "c"
     }
 }
