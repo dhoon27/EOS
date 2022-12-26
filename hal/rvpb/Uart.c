@@ -6,11 +6,14 @@
  */
 
 #include "stdint.h"
+#include "stdbool.h"
 #include "Uart.h"
 #include "HalUart.h"
 #include "HalInterrupt.h"
 
-volatile PL011_t* Uart;
+#include "Kernel.h"
+
+extern volatile PL011_t* Uart;
 
 static void interrupt_handler(void);
 
@@ -45,7 +48,8 @@ uint8_t Hal_uart_get_char(void)
     data = Uart->uartdr.all;
 
     // Check for an error flag
-    if(data & 0xFFFFFF00) {
+    if (data & 0xFFFFFF00)
+    {
         // Clear the error
         Uart->uartrsr.all = 0xFF;
         return 0;
@@ -58,4 +62,11 @@ static void interrupt_handler(void)
 {
     uint8_t ch = Hal_uart_get_char();
     Hal_uart_put_char(ch);
+
+    Kernel_send_events(KernelEventFlag_UartIn|KernelEventFlag_CmdIn);
+
+    if (ch == 'X')
+    {
+        Kernel_send_events(KernelEventFlag_CmdOut);
+    }
 }
